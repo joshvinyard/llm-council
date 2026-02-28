@@ -1,13 +1,4 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
-
-# Virtual environments
-.venv
+node_modules/
 
 # Keys and secrets
 .env
@@ -15,7 +6,6 @@ wheels/
 # Data files
 data/
 
-# Frontend
-frontend/node_modules/
+# Build output
 frontend/dist/
 frontend/.vite/
