@@ -46,6 +46,28 @@ export const api = {
     return response.json();
   },
 
+  async getSettings() {
+    const response = await fetch(`${API_BASE}/api/settings`);
+    if (!response.ok) throw new Error('Failed to get settings');
+    return response.json();
+  },
+
+  async saveSettings(settings) {
+    const response = await fetch(`${API_BASE}/api/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings),
+    });
+    if (!response.ok) throw new Error('Failed to save settings');
+    return response.json();
+  },
+
+  async getAvailableModels() {
+    const response = await fetch(`${API_BASE}/api/models`);
+    if (!response.ok) throw new Error('Failed to get models');
+    return response.json();
+  },
+
   /**
    * Send a message in a conversation.
    */

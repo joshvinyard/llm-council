@@ -1,6 +1,7 @@
 import express from 'express';
 import { randomUUID } from 'crypto';
 import * as storage from './storage.js';
+import { OPENROUTER_API_KEY, getActiveSettings } from './config.js';
 import {
   stage1CollectResponses,
   stage2CollectRankings,
@@ -13,7 +14,42 @@ import {
 const app = express();
 app.use(express.json());
 
-// --- API Routes ---
+// --- Settings & Models API Routes ---
+
+app.get('/api/settings', async (req, res) => {
+  const settings = await getActiveSettings();
+  res.json(settings);
+});
+
+app.put('/api/settings', async (req, res) => {
+  const { councilModels, chairmanModel } = req.body;
+  if (!Array.isArray(councilModels) || councilModels.length < 2) {
+    return res.status(400).json({ detail: 'At least 2 council models required' });
+  }
+  if (typeof chairmanModel !== 'string' || !chairmanModel) {
+    return res.status(400).json({ detail: 'A chairman model is required' });
+  }
+  await storage.saveSettings({ councilModels, chairmanModel });
+  res.json({ councilModels, chairmanModel });
+});
+
+app.get('/api/models', async (req, res) => {
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: { 'Authorization': `Bearer ${OPENROUTER_API_KEY}` },
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      return res.status(response.status).json({ detail: text });
+    }
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ detail: err.message });
+  }
+});
+
+// --- Conversation API Routes ---
 
 app.get('/api/conversations', async (req, res) => {
   const conversations = await storage.listConversations();
@@ -48,7 +84,8 @@ app.post('/api/conversations/:id/message', async (req, res) => {
     await storage.updateConversationTitle(id, title);
   }
 
-  const [stage1Results, stage2Results, stage3Result, metadata] = await runFullCouncil(content);
+  const { councilModels, chairmanModel } = await getActiveSettings();
+  const [stage1Results, stage2Results, stage3Result, metadata] = await runFullCouncil(content, councilModels, chairmanModel);
 
   await storage.addAssistantMessage(id, stage1Results, stage2Results, stage3Result);
 
@@ -81,14 +118,16 @@ app.post('/api/conversations/:id/message/stream', async (req, res) => {
       titlePromise = generateConversationTitle(content);
     }
 
+    const { councilModels, chairmanModel } = await getActiveSettings();
+
     // Stage 1
     send({ type: 'stage1_start' });
-    const stage1Results = await stage1CollectResponses(content);
+    const stage1Results = await stage1CollectResponses(content, councilModels);
     send({ type: 'stage1_complete', data: stage1Results });
 
     // Stage 2
     send({ type: 'stage2_start' });
-    const [stage2Results, labelToModel] = await stage2CollectRankings(content, stage1Results);
+    const [stage2Results, labelToModel] = await stage2CollectRankings(content, stage1Results, councilModels);
     const aggregateRankings = calculateAggregateRankings(stage2Results, labelToModel);
     send({
       type: 'stage2_complete',
@@ -98,7 +137,7 @@ app.post('/api/conversations/:id/message/stream', async (req, res) => {
 
     // Stage 3
     send({ type: 'stage3_start' });
-    const stage3Result = await stage3SynthesizeFinal(content, stage1Results, stage2Results);
+    const stage3Result = await stage3SynthesizeFinal(content, stage1Results, stage2Results, chairmanModel);
     send({ type: 'stage3_complete', data: stage3Result });
 
     // Wait for title

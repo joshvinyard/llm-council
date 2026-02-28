@@ -92,6 +92,22 @@ export async function addAssistantMessage(conversationId, stage1, stage2, stage3
   await saveConversation(conversation);
 }
 
+const SETTINGS_PATH = path.join(path.dirname(DATA_DIR), 'settings.json');
+
+export async function getSettings() {
+  try {
+    const data = await fs.readFile(SETTINGS_PATH, 'utf-8');
+    return JSON.parse(data);
+  } catch {
+    return null;
+  }
+}
+
+export async function saveSettings(settings) {
+  await fs.mkdir(path.dirname(SETTINGS_PATH), { recursive: true });
+  await fs.writeFile(SETTINGS_PATH, JSON.stringify(settings, null, 2));
+}
+
 export async function updateConversationTitle(conversationId, title) {
   const conversation = await getConversation(conversationId);
   if (!conversation) throw new Error(`Conversation ${conversationId} not found`);

@@ -1,12 +1,11 @@
 import { queryModel, queryModelsParallel } from './openrouter.js';
-import { COUNCIL_MODELS, CHAIRMAN_MODEL } from './config.js';
 
 /**
  * Stage 1: Collect individual responses from all council models.
  */
-export async function stage1CollectResponses(userQuery) {
+export async function stage1CollectResponses(userQuery, councilModels) {
   const messages = [{ role: 'user', content: userQuery }];
-  const responses = await queryModelsParallel(COUNCIL_MODELS, messages);
+  const responses = await queryModelsParallel(councilModels, messages);
 
   const results = [];
   for (const [model, response] of Object.entries(responses)) {
@@ -21,7 +20,7 @@ export async function stage1CollectResponses(userQuery) {
  * Stage 2: Each model ranks the anonymized responses.
  * @returns {[Array, Record<string, string>]} - [rankings, labelToModel]
  */
-export async function stage2CollectRankings(userQuery, stage1Results) {
+export async function stage2CollectRankings(userQuery, stage1Results, councilModels) {
   // Create anonymized labels
   const labels = stage1Results.map((_, i) => String.fromCharCode(65 + i));
 
@@ -66,7 +65,7 @@ FINAL RANKING:
 Now provide your evaluation and ranking:`;
 
   const messages = [{ role: 'user', content: rankingPrompt }];
-  const responses = await queryModelsParallel(COUNCIL_MODELS, messages);
+  const responses = await queryModelsParallel(councilModels, messages);
 
   const stage2Results = [];
   for (const [model, response] of Object.entries(responses)) {
@@ -87,7 +86,7 @@ Now provide your evaluation and ranking:`;
 /**
  * Stage 3: Chairman synthesizes final response.
  */
-export async function stage3SynthesizeFinal(userQuery, stage1Results, stage2Results) {
+export async function stage3SynthesizeFinal(userQuery, stage1Results, stage2Results, chairmanModel) {
   const stage1Text = stage1Results
     .map((r) => `Model: ${r.model}\nResponse: ${r.response}`)
     .join('\n\n');
@@ -114,17 +113,17 @@ Your task as Chairman is to synthesize all of this information into a single, co
 Provide a clear, well-reasoned final answer that represents the council's collective wisdom:`;
 
   const messages = [{ role: 'user', content: chairmanPrompt }];
-  const response = await queryModel(CHAIRMAN_MODEL, messages);
+  const response = await queryModel(chairmanModel, messages);
 
   if (response === null) {
     return {
-      model: CHAIRMAN_MODEL,
+      model: chairmanModel,
       response: 'Error: Unable to generate final synthesis.',
     };
   }
 
   return {
-    model: CHAIRMAN_MODEL,
+    model: chairmanModel,
     response: response.content || '',
   };
 }
@@ -222,8 +221,8 @@ Title:`;
  * Run the complete 3-stage council process.
  * @returns {[Array, Array, Object, Object]}
  */
-export async function runFullCouncil(userQuery) {
-  const stage1Results = await stage1CollectResponses(userQuery);
+export async function runFullCouncil(userQuery, councilModels, chairmanModel) {
+  const stage1Results = await stage1CollectResponses(userQuery, councilModels);
 
   if (stage1Results.length === 0) {
     return [
@@ -234,9 +233,9 @@ export async function runFullCouncil(userQuery) {
     ];
   }
 
-  const [stage2Results, labelToModel] = await stage2CollectRankings(userQuery, stage1Results);
+  const [stage2Results, labelToModel] = await stage2CollectRankings(userQuery, stage1Results, councilModels);
   const aggregateRankings = calculateAggregateRankings(stage2Results, labelToModel);
-  const stage3Result = await stage3SynthesizeFinal(userQuery, stage1Results, stage2Results);
+  const stage3Result = await stage3SynthesizeFinal(userQuery, stage1Results, stage2Results, chairmanModel);
 
   const metadata = { label_to_model: labelToModel, aggregate_rankings: aggregateRankings };
   return [stage1Results, stage2Results, stage3Result, metadata];
