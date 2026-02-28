@@ -10,7 +10,7 @@ function App() {
   const [currentConversationId, setCurrentConversationId] = useState(null);
   const [currentConversation, setCurrentConversation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [currentView, setCurrentView] = useState('chat');
 
   // Load conversations on mount
   useEffect(() => {
@@ -59,7 +59,7 @@ function App() {
     setCurrentConversationId(id);
   };
 
-  const handleSendMessage = async (content) => {
+  const handleSendMessage = async (content, selectedPreset = null) => {
     if (!currentConversationId) return;
 
     setIsLoading(true);
@@ -90,6 +90,11 @@ function App() {
         ...prev,
         messages: [...prev.messages, assistantMessage],
       }));
+
+      // Build model override from preset if selected
+      const modelOverride = selectedPreset
+        ? { councilModels: selectedPreset.councilModels, chairmanModel: selectedPreset.chairmanModel }
+        : undefined;
 
       // Send message with streaming
       await api.sendMessageStream(currentConversationId, content, (eventType, event) => {
@@ -171,7 +176,7 @@ function App() {
           default:
             console.log('Unknown event type:', eventType);
         }
-      });
+      }, modelOverride);
     } catch (error) {
       console.error('Failed to send message:', error);
       // Remove optimistic messages on error
@@ -188,19 +193,20 @@ function App() {
       <Sidebar
         conversations={conversations}
         currentConversationId={currentConversationId}
-        onSelectConversation={handleSelectConversation}
-        onNewConversation={handleNewConversation}
-        onOpenSettings={() => setIsSettingsOpen(true)}
+        onSelectConversation={(id) => { handleSelectConversation(id); setCurrentView('chat'); }}
+        onNewConversation={() => { handleNewConversation(); setCurrentView('chat'); }}
+        onNavigate={setCurrentView}
+        currentView={currentView}
       />
-      <ChatInterface
-        conversation={currentConversation}
-        onSendMessage={handleSendMessage}
-        isLoading={isLoading}
-      />
-      <SettingsPanel
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
+      {currentView === 'settings' ? (
+        <SettingsPanel onClose={() => setCurrentView('chat')} />
+      ) : (
+        <ChatInterface
+          conversation={currentConversation}
+          onSendMessage={handleSendMessage}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   );
 }

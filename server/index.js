@@ -33,6 +33,34 @@ app.put('/api/settings', async (req, res) => {
   res.json({ councilModels, chairmanModel });
 });
 
+// --- Preset API Routes ---
+
+app.get('/api/presets', async (req, res) => {
+  const presets = await storage.getPresets();
+  res.json(presets);
+});
+
+app.post('/api/presets', async (req, res) => {
+  const { name, councilModels, chairmanModel } = req.body;
+  if (!name || typeof name !== 'string') {
+    return res.status(400).json({ detail: 'A preset name is required' });
+  }
+  if (!Array.isArray(councilModels) || councilModels.length < 2) {
+    return res.status(400).json({ detail: 'At least 2 council models required' });
+  }
+  if (typeof chairmanModel !== 'string' || !chairmanModel) {
+    return res.status(400).json({ detail: 'A chairman model is required' });
+  }
+  const preset = { id: randomUUID(), name, councilModels, chairmanModel };
+  await storage.addPreset(preset);
+  res.json(preset);
+});
+
+app.delete('/api/presets/:id', async (req, res) => {
+  await storage.deletePreset(req.params.id);
+  res.json({ ok: true });
+});
+
 app.get('/api/models', async (req, res) => {
   try {
     const response = await fetch('https://openrouter.ai/api/v1/models', {
@@ -70,7 +98,7 @@ app.get('/api/conversations/:id', async (req, res) => {
 
 app.post('/api/conversations/:id/message', async (req, res) => {
   const { id } = req.params;
-  const { content } = req.body;
+  const { content, councilModels: overrideCouncil, chairmanModel: overrideChairman } = req.body;
 
   const conversation = await storage.getConversation(id);
   if (!conversation) return res.status(404).json({ detail: 'Conversation not found' });
@@ -84,7 +112,9 @@ app.post('/api/conversations/:id/message', async (req, res) => {
     await storage.updateConversationTitle(id, title);
   }
 
-  const { councilModels, chairmanModel } = await getActiveSettings();
+  const defaults = await getActiveSettings();
+  const councilModels = (Array.isArray(overrideCouncil) && overrideCouncil.length >= 2) ? overrideCouncil : defaults.councilModels;
+  const chairmanModel = (typeof overrideChairman === 'string' && overrideChairman) ? overrideChairman : defaults.chairmanModel;
   const [stage1Results, stage2Results, stage3Result, metadata] = await runFullCouncil(content, councilModels, chairmanModel);
 
   await storage.addAssistantMessage(id, stage1Results, stage2Results, stage3Result);
@@ -94,7 +124,7 @@ app.post('/api/conversations/:id/message', async (req, res) => {
 
 app.post('/api/conversations/:id/message/stream', async (req, res) => {
   const { id } = req.params;
-  const { content } = req.body;
+  const { content, councilModels: overrideCouncil, chairmanModel: overrideChairman } = req.body;
 
   const conversation = await storage.getConversation(id);
   if (!conversation) return res.status(404).json({ detail: 'Conversation not found' });
@@ -118,7 +148,9 @@ app.post('/api/conversations/:id/message/stream', async (req, res) => {
       titlePromise = generateConversationTitle(content);
     }
 
-    const { councilModels, chairmanModel } = await getActiveSettings();
+    const defaults = await getActiveSettings();
+    const councilModels = (Array.isArray(overrideCouncil) && overrideCouncil.length >= 2) ? overrideCouncil : defaults.councilModels;
+    const chairmanModel = (typeof overrideChairman === 'string' && overrideChairman) ? overrideChairman : defaults.chairmanModel;
 
     // Stage 1
     send({ type: 'stage1_start' });

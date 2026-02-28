@@ -68,6 +68,30 @@ export const api = {
     return response.json();
   },
 
+  async getPresets() {
+    const response = await fetch(`${API_BASE}/api/presets`);
+    if (!response.ok) throw new Error('Failed to get presets');
+    return response.json();
+  },
+
+  async createPreset({ name, councilModels, chairmanModel }) {
+    const response = await fetch(`${API_BASE}/api/presets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, councilModels, chairmanModel }),
+    });
+    if (!response.ok) throw new Error('Failed to create preset');
+    return response.json();
+  },
+
+  async deletePreset(id) {
+    const response = await fetch(`${API_BASE}/api/presets/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Failed to delete preset');
+    return response.json();
+  },
+
   /**
    * Send a message in a conversation.
    */
@@ -95,7 +119,13 @@ export const api = {
    * @param {function} onEvent - Callback function for each event: (eventType, data) => void
    * @returns {Promise<void>}
    */
-  async sendMessageStream(conversationId, content, onEvent) {
+  async sendMessageStream(conversationId, content, onEvent, modelOverride) {
+    const body = { content };
+    if (modelOverride) {
+      body.councilModels = modelOverride.councilModels;
+      body.chairmanModel = modelOverride.chairmanModel;
+    }
+
     const response = await fetch(
       `${API_BASE}/api/conversations/${conversationId}/message/stream`,
       {
@@ -103,7 +133,7 @@ export const api = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify(body),
       }
     );
 

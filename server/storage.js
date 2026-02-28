@@ -108,6 +108,30 @@ export async function saveSettings(settings) {
   await fs.writeFile(SETTINGS_PATH, JSON.stringify(settings, null, 2));
 }
 
+const PRESETS_PATH = path.join(path.dirname(DATA_DIR), 'presets.json');
+
+export async function getPresets() {
+  try {
+    const data = await fs.readFile(PRESETS_PATH, 'utf-8');
+    return JSON.parse(data);
+  } catch {
+    return [];
+  }
+}
+
+export async function addPreset(preset) {
+  const presets = await getPresets();
+  presets.push(preset);
+  await fs.mkdir(path.dirname(PRESETS_PATH), { recursive: true });
+  await fs.writeFile(PRESETS_PATH, JSON.stringify(presets, null, 2));
+}
+
+export async function deletePreset(id) {
+  const presets = await getPresets();
+  const filtered = presets.filter((p) => p.id !== id);
+  await fs.writeFile(PRESETS_PATH, JSON.stringify(filtered, null, 2));
+}
+
 export async function updateConversationTitle(conversationId, title) {
   const conversation = await getConversation(conversationId);
   if (!conversation) throw new Error(`Conversation ${conversationId} not found`);
