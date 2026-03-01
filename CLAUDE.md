@@ -33,7 +33,7 @@ npm run lint   # ESLint for frontend
 
 ## Architecture
 
-LLM Council is a single Node.js full-stack app that queries multiple LLMs via OpenRouter, has them anonymously peer-review each other's responses, then synthesizes a final answer. Express serves both the API and the React frontend (via Vite dev middleware in dev, static files in production).
+LLM Bullpen is a single Node.js full-stack app that queries multiple LLMs via OpenRouter, has them anonymously peer-review each other's responses, then synthesizes a final answer. Express serves both the API and the React frontend (via Vite dev middleware in dev, static files in production).
 
 ### 3-Stage Pipeline (core logic in `server/council.js`)
 

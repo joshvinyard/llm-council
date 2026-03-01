@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import fs from 'fs/promises';
+import db from './database.js';
 
 export const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
@@ -17,20 +17,19 @@ export const DEFAULT_CHAIRMAN_MODEL = CHAIRMAN_MODEL;
 
 export const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-export const DATA_DIR = 'data/conversations';
-
-export async function getActiveSettings() {
-  try {
-    const data = await fs.readFile('data/settings.json', 'utf-8');
-    const settings = JSON.parse(data);
-    if (settings.councilModels && settings.chairmanModel) {
-      return {
-        councilModels: settings.councilModels,
-        chairmanModel: settings.chairmanModel,
-      };
+export function getActiveSettings(userId) {
+  if (userId) {
+    const row = db.prepare('SELECT * FROM settings WHERE user_id = ?').get(userId);
+    if (row) {
+      try {
+        const councilModels = JSON.parse(row.council_models);
+        if (councilModels && row.chairman_model) {
+          return { councilModels, chairmanModel: row.chairman_model };
+        }
+      } catch {
+        // Invalid JSON — fall through to defaults
+      }
     }
-  } catch {
-    // No settings file or invalid — use defaults
   }
   return {
     councilModels: DEFAULT_COUNCIL_MODELS,

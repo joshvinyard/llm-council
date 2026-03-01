@@ -1,107 +1,149 @@
 .sidebar {
   width: 260px;
-  background: #f8f8f8;
-  border-right: 1px solid #e0e0e0;
+  background: var(--color-bg);
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
 
 .sidebar-header {
-  padding: 16px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.sidebar-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .sidebar-header h1 {
-  font-size: 18px;
-  margin: 0;
-  color: #333;
-}
-
-.settings-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #666;
-  padding: 4px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  transition: color 0.2s, background 0.2s;
-}
-
-.settings-btn:hover {
-  color: #333;
-  background: #e0e0e0;
-}
-
-.settings-btn.active {
-  color: #4a90e2;
-  background: #e8f0fe;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 var(--space-3) 0;
+  color: var(--color-text);
 }
 
 .new-conversation-btn {
   width: 100%;
   padding: 10px;
-  background: #4a90e2;
-  border: 1px solid #4a90e2;
-  border-radius: 6px;
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
   color: #fff;
   cursor: pointer;
   font-size: 14px;
-  transition: background 0.2s;
+  transition: background var(--transition-normal);
   font-weight: 500;
 }
 
 .new-conversation-btn:hover {
-  background: #357abd;
-  border-color: #357abd;
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
 }
 
 .conversation-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  padding: var(--space-2);
 }
 
 .no-conversations {
-  padding: 16px;
+  padding: var(--space-4);
   text-align: center;
-  color: #999;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
 .conversation-item {
-  padding: 12px;
-  margin-bottom: 4px;
-  border-radius: 6px;
+  padding: var(--space-3);
+  margin-bottom: var(--space-1);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background var(--transition-normal);
+  border: 1px solid transparent;
 }
 
 .conversation-item:hover {
-  background: #f0f0f0;
+  background: var(--color-hover-bg);
 }
 
 .conversation-item.active {
-  background: #e8f0fe;
-  border: 1px solid #4a90e2;
+  background: var(--color-primary-bg);
+  border-color: var(--color-primary);
 }
 
 .conversation-title {
-  color: #333;
+  color: var(--color-text);
   font-size: 14px;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .conversation-meta {
-  color: #999;
+  color: var(--color-text-muted);
   font-size: 12px;
+}
+
+.sidebar-footer {
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.sidebar-footer-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.sidebar-footer-btn:hover {
+  color: var(--color-text);
+  background: var(--color-hover-bg);
+}
+
+.sidebar-footer-btn.active {
+  color: var(--color-primary);
+  background: var(--color-primary-bg);
+}
+
+.sidebar-user-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+.sidebar-user-email {
+  flex: 1;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.logout-btn {
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.logout-btn:hover {
+  background: var(--color-hover-bg);
+  color: var(--color-text);
 }

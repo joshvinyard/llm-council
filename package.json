@@ -1,5 +1,5 @@
 {
-  "name": "llm-council",
+  "name": "llm-bullpen",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -10,8 +10,11 @@
     "lint": "eslint frontend/src"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.6.2",
     "dotenv": "^16.4.7",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

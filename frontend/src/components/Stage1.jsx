@@ -13,10 +13,13 @@ export default function Stage1({ responses }) {
     <div className="stage stage1">
       <h3 className="stage-title">Stage 1: Individual Responses</h3>
 
-      <div className="tabs">
+      <div className="tabs" role="tablist" aria-label="Individual model responses">
         {responses.map((resp, index) => (
           <button
             key={index}
+            role="tab"
+            aria-selected={activeTab === index}
+            aria-controls="stage1-tabpanel"
             className={`tab ${activeTab === index ? 'active' : ''}`}
             onClick={() => setActiveTab(index)}
           >
@@ -25,7 +28,7 @@ export default function Stage1({ responses }) {
         ))}
       </div>
 
-      <div className="tab-content">
+      <div className="tab-content" role="tabpanel" id="stage1-tabpanel">
         <div className="model-name">{responses[activeTab].model}</div>
         <div className="response-text markdown-content">
           <ReactMarkdown>{responses[activeTab].response}</ReactMarkdown>

@@ -57,6 +57,8 @@ export default function SettingsPanel({ onClose }) {
   const [presets, setPresets] = useState([]);
   const [presetName, setPresetName] = useState('');
   const [showPresetInput, setShowPresetInput] = useState(false);
+  const [modelHealth, setModelHealth] = useState({});
+  const [healthLoading, setHealthLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -64,10 +66,30 @@ export default function SettingsPanel({ onClose }) {
 
     Promise.all([api.getSettings(), api.getAvailableModels(), api.getPresets()])
       .then(([settings, modelsData, presetsData]) => {
+        const models = modelsData.data || [];
         setCouncilModels(settings.councilModels || []);
         setChairmanModel(settings.chairmanModel || '');
-        setAvailableModels(modelsData.data || []);
+        setAvailableModels(models);
         setPresets(presetsData);
+
+        // Fetch health for all models in the background
+        if (models.length > 0) {
+          const allIds = models.map((m) => m.id);
+          setHealthLoading(true);
+          // Fetch in batches of 50 to avoid overly long URLs
+          const BATCH = 50;
+          const batches = [];
+          for (let i = 0; i < allIds.length; i += BATCH) {
+            batches.push(allIds.slice(i, i + BATCH));
+          }
+          Promise.all(batches.map((batch) => api.getModelsHealth(batch)))
+            .then((results) => {
+              const merged = Object.assign({}, ...results);
+              setModelHealth(merged);
+            })
+            .catch(() => { /* health is best-effort */ })
+            .finally(() => setHealthLoading(false));
+        }
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -108,6 +130,8 @@ export default function SettingsPanel({ onClose }) {
     );
   }, [availableModels, search]);
 
+  const statusOrder = { up: 0, degraded: 1, down: 2, unknown: 3 };
+
   const sortModels = (models, { col, dir }, role) => {
     const sorted = [...models].sort((a, b) => {
       let cmp = 0;
@@ -124,6 +148,12 @@ export default function SettingsPanel({ onClose }) {
         case 'date':
           cmp = (a.created || 0) - (b.created || 0);
           break;
+        case 'status': {
+          const sa = modelHealth[a.id]?.status || 'unknown';
+          const sb = modelHealth[b.id]?.status || 'unknown';
+          cmp = (statusOrder[sa] ?? 3) - (statusOrder[sb] ?? 3);
+          break;
+        }
       }
       return dir === 'asc' ? cmp : -cmp;
     });
@@ -172,10 +202,14 @@ export default function SettingsPanel({ onClose }) {
     }
   };
 
+  const statusLabels = { up: 'Operational', degraded: 'Degraded', down: 'Down', unknown: 'N/A' };
+
   const renderModelRow = (model, type) => {
     const isCouncil = type === 'council';
     const isSelected = isCouncil ? councilModels.includes(model.id) : chairmanModel === model.id;
     const cost = estimateCostPerQuery(model, isCouncil ? 'council' : 'chairman');
+    const health = modelHealth[model.id];
+    const healthStatus = health?.status || 'unknown';
 
     return (
       <label
@@ -202,6 +236,10 @@ export default function SettingsPanel({ onClose }) {
           <span className="model-primary-name">{model.name || model.id}</span>
           <span className="model-id">{model.id}</span>
         </div>
+        <div className="model-row-status" title={health?.uptime != null ? `${health.uptime.toFixed(1)}% uptime (30m)` : ''}>
+          <span className={`status-dot status-${healthStatus}`} />
+          <span className="status-label">{statusLabels[healthStatus]}</span>
+        </div>
         <div className="model-row-cost">
           {formatCost(cost)}
         </div>
@@ -222,6 +260,9 @@ export default function SettingsPanel({ onClose }) {
       <div className="mlh-select"></div>
       <div className="mlh-name sortable" onClick={() => toggleSort(setter, 'name')}>
         Model <SortArrow column="name" sortCol={sort.col} sortDir={sort.dir} />
+      </div>
+      <div className="mlh-status sortable" onClick={() => toggleSort(setter, 'status')}>
+        Status <SortArrow column="status" sortCol={sort.col} sortDir={sort.dir} />
       </div>
       <div className="mlh-cost sortable" onClick={() => toggleSort(setter, 'cost')}>
         Est. $/query <SortArrow column="cost" sortCol={sort.col} sortDir={sort.dir} />

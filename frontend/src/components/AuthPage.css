@@ -1,0 +1,125 @@
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100vw;
+  background: var(--color-bg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  padding: var(--space-8);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.auth-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: center;
+  margin: 0 0 var(--space-1) 0;
+}
+
+.auth-subtitle {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin: 0 0 var(--space-6) 0;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.auth-label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.auth-input {
+  padding: 10px var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.auth-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.auth-submit {
+  padding: 10px;
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--transition-normal);
+  margin-top: var(--space-2);
+}
+
+.auth-submit:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.auth-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-error {
+  padding: var(--space-3);
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
+  font-size: 13px;
+}
+
+.auth-toggle {
+  text-align: center;
+  margin-top: var(--space-5);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.auth-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 500;
+}
+
+.auth-toggle-btn:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}

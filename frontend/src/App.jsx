@@ -2,20 +2,33 @@ import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatInterface from './components/ChatInterface';
 import SettingsPanel from './components/SettingsPanel';
+import AuthPage from './components/AuthPage';
 import { api } from './api';
 import './App.css';
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
   const [currentConversation, setCurrentConversation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentView, setCurrentView] = useState('chat');
 
-  // Load conversations on mount
+  // Check auth on mount
   useEffect(() => {
-    loadConversations();
+    if (api.isAuthenticated()) {
+      setUser(api.getStoredUser());
+    }
+    setAuthChecked(true);
   }, []);
+
+  // Load conversations when user is authenticated
+  useEffect(() => {
+    if (user) {
+      loadConversations();
+    }
+  }, [user]);
 
   // Load conversation details when selected
   useEffect(() => {
@@ -23,6 +36,19 @@ function App() {
       loadConversation(currentConversationId);
     }
   }, [currentConversationId]);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    api.logout();
+    setUser(null);
+    setConversations([]);
+    setCurrentConversationId(null);
+    setCurrentConversation(null);
+    setCurrentView('chat');
+  };
 
   const loadConversations = async () => {
     try {
@@ -188,6 +214,14 @@ function App() {
     }
   };
 
+  // Don't render until auth check is done (prevents flash)
+  if (!authChecked) return null;
+
+  // Show auth page if not logged in
+  if (!user) {
+    return <AuthPage onLogin={handleLogin} />;
+  }
+
   return (
     <div className="app">
       <Sidebar
@@ -197,6 +231,8 @@ function App() {
         onNewConversation={() => { handleNewConversation(); setCurrentView('chat'); }}
         onNavigate={setCurrentView}
         currentView={currentView}
+        user={user}
+        onLogout={handleLogout}
       />
       {currentView === 'settings' ? (
         <SettingsPanel onClose={() => setCurrentView('chat')} />

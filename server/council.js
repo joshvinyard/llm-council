@@ -95,7 +95,7 @@ export async function stage3SynthesizeFinal(userQuery, stage1Results, stage2Resu
     .map((r) => `Model: ${r.model}\nRanking: ${r.ranking}`)
     .join('\n\n');
 
-  const chairmanPrompt = `You are the Chairman of an LLM Council. Multiple AI models have provided responses to a user's question, and then ranked each other's responses.
+  const chairmanPrompt = `You are the Chairman of an LLM Bullpen. Multiple AI models have provided responses to a user's question, and then ranked each other's responses.
 
 Original Question: ${userQuery}
 

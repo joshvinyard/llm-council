@@ -31,10 +31,13 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
         Below, model names are shown in <strong>bold</strong> for readability, but the original evaluation used anonymous labels.
       </p>
 
-      <div className="tabs">
+      <div className="tabs" role="tablist" aria-label="Peer ranking evaluations">
         {rankings.map((rank, index) => (
           <button
             key={index}
+            role="tab"
+            aria-selected={activeTab === index}
+            aria-controls="stage2-tabpanel"
             className={`tab ${activeTab === index ? 'active' : ''}`}
             onClick={() => setActiveTab(index)}
           >
@@ -43,7 +46,7 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
         ))}
       </div>
 
-      <div className="tab-content">
+      <div className="tab-content" role="tabpanel" id="stage2-tabpanel">
         <div className="ranking-model">
           {rankings[activeTab].model}
         </div>

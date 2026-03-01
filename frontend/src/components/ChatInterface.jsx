@@ -43,7 +43,7 @@ export default function ChatInterface({
     return (
       <div className="chat-interface">
         <div className="empty-state">
-          <h2>Welcome to LLM Council</h2>
+          <h2>Welcome to LLM Bullpen</h2>
           <p>Create a new conversation to get started</p>
         </div>
       </div>
@@ -56,7 +56,7 @@ export default function ChatInterface({
         {conversation.messages.length === 0 ? (
           <div className="empty-state">
             <h2>Start a conversation</h2>
-            <p>Ask a question to consult the LLM Council</p>
+            <p>Ask a question to consult the LLM Bullpen</p>
           </div>
         ) : (
           conversation.messages.map((msg, index) => (
@@ -72,12 +72,12 @@ export default function ChatInterface({
                 </div>
               ) : (
                 <div className="assistant-message">
-                  <div className="message-label">LLM Council</div>
+                  <div className="message-label">LLM Bullpen</div>
 
                   {/* Stage 1 */}
                   {msg.loading?.stage1 && (
-                    <div className="stage-loading">
-                      <div className="spinner"></div>
+                    <div className="stage-loading" role="status">
+                      <div className="spinner" aria-hidden="true"></div>
                       <span>Running Stage 1: Collecting individual responses...</span>
                     </div>
                   )}
@@ -85,8 +85,8 @@ export default function ChatInterface({
 
                   {/* Stage 2 */}
                   {msg.loading?.stage2 && (
-                    <div className="stage-loading">
-                      <div className="spinner"></div>
+                    <div className="stage-loading" role="status">
+                      <div className="spinner" aria-hidden="true"></div>
                       <span>Running Stage 2: Peer rankings...</span>
                     </div>
                   )}
@@ -100,8 +100,8 @@ export default function ChatInterface({
 
                   {/* Stage 3 */}
                   {msg.loading?.stage3 && (
-                    <div className="stage-loading">
-                      <div className="spinner"></div>
+                    <div className="stage-loading" role="status">
+                      <div className="spinner" aria-hidden="true"></div>
                       <span>Running Stage 3: Final synthesis...</span>
                     </div>
                   )}
@@ -113,9 +113,9 @@ export default function ChatInterface({
         )}
 
         {isLoading && (
-          <div className="loading-indicator">
-            <div className="spinner"></div>
-            <span>Consulting the council...</span>
+          <div className="loading-indicator" role="status">
+            <div className="spinner" aria-hidden="true"></div>
+            <span>Consulting the bullpen...</span>
           </div>
         )}
 
