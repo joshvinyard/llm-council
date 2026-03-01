@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import ChatInterface from './components/ChatInterface';
 import SettingsPanel from './components/SettingsPanel';
 import AuthPage from './components/AuthPage';
+import LandingPage from './components/LandingPage';
 import { api } from './api';
 import './App.css';
 
@@ -14,6 +15,7 @@ function App() {
   const [currentConversation, setCurrentConversation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentView, setCurrentView] = useState('chat');
+  const [currentUnauthView, setCurrentUnauthView] = useState('landing');
 
   // Check auth on mount
   useEffect(() => {
@@ -48,6 +50,7 @@ function App() {
     setCurrentConversationId(null);
     setCurrentConversation(null);
     setCurrentView('chat');
+    setCurrentUnauthView('landing');
   };
 
   const loadConversations = async () => {
@@ -217,9 +220,12 @@ function App() {
   // Don't render until auth check is done (prevents flash)
   if (!authChecked) return null;
 
-  // Show auth page if not logged in
+  // Show landing or auth page if not logged in
   if (!user) {
-    return <AuthPage onLogin={handleLogin} />;
+    if (currentUnauthView === 'auth') {
+      return <AuthPage onLogin={handleLogin} onBackToLanding={() => setCurrentUnauthView('landing')} />;
+    }
+    return <LandingPage onGetStarted={() => setCurrentUnauthView('auth')} />;
   }
 
   return (
